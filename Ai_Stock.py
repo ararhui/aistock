@@ -22,17 +22,30 @@ end_date = st.sidebar.date_input("End Date", value=pd.to_datetime("2024-12-14"))
 # Fetch stock data
 if st.sidebar.button("Fetch Data"):
     try:
-        st.session_state["stock_data"] = yf.download(ticker, start=start_date, end=end_date)
+        data = yf.download(ticker, start=start_date, end=end_date)
+        st.session_state["stock_data"] = data  # Store the data in session state
         st.success("Stock data loaded successfully!")
     except Exception as e:
         st.error(f"Error fetching data: {e}")
+        st.stop()  # Stop execution if data fetching fails
 
 # Check if data is available
 if "stock_data" in st.session_state:
     data = st.session_state["stock_data"]
 
-    # Check if the DataFrame is empty
-    if data is not None and not data.empty:
+    # Check if the DataFrame is empty or contains NaN values
+    if data is not None and not data.empty and not data.isnull().values.any():
+
+        # Convert data types to numeric (handle potential errors)
+        try:
+            data['Open'] = pd.to_numeric(data['Open'])
+            data['High'] = pd.to_numeric(data['High'])
+            data['Low'] = pd.to_numeric(data['Low'])
+            data['Close'] = pd.to_numeric(data['Close'])
+            data['Volume'] = pd.to_numeric(data['Volume'])
+        except ValueError as e:
+            st.error(f"Error converting data to numeric: {e}")
+            st.stop()
 
         # Plot candlestick chart
         fig = go.Figure(data=[
@@ -51,6 +64,8 @@ if "stock_data" in st.session_state:
             xaxis_title="Date",
             yaxis_title="Price",
         )
+
+        st.plotly_chart(fig)
 
         # Sidebar: Select technical indicators
         st.sidebar.subheader("Technical Indicators")
@@ -122,7 +137,7 @@ if "stock_data" in st.session_state:
             os.remove(tmpfile_path)
 
     else:
-        st.warning("No data found for the specified ticker and date range. Please check your inputs.")
+        st.warning("No data found for the specified ticker and date range, or data contains NaN values. Please check your inputs.")
         st.info("Click 'Fetch Data' to load stock data.")
 else:
     st.info("Click 'Fetch Data' to load stock data.")
