@@ -28,17 +28,15 @@ if st.sidebar.button("Fetch Data"):
 if "stock_data" in st.session_state:
     data = st.session_state["stock_data"]
 
-    # Plot candlestick chart
-    fig = go.Figure(data=[
-        go.Candlestick(
-            x=data.index,
-            open=data['Open'],
-            high=data['High'],
-            low=data['Low'],
-            close=data['Close'],
-            name="Candlestick"  # Replace "trace 0" with "Candlestick"
-        )
-    ])
+    # Display the data as a table
+    st.header(f"Stock Data for {ticker}")
+    st.dataframe(data)  # Use st.dataframe or st.table
+
+    # Optional: Display some summary statistics
+    st.subheader("Summary Statistics")
+    st.write(data.describe())
+else:
+    st.info("Click 'Fetch Data' to load stock data.")
 
     # Sidebar: Select technical indicators
     st.sidebar.subheader("Technical Indicators")
