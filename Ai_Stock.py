@@ -29,7 +29,6 @@ if "stock_data" in st.session_state:
     data = st.session_state["stock_data"]
 
     # Plot candlestick chart
-        # Plot candlestick chart
         fig = go.Figure(data=[
             go.Candlestick(
                 x=data.index,
