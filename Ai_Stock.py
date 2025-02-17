@@ -25,6 +25,9 @@ if st.sidebar.button("Fetch Data"):
     st.success("Stock data loaded successfully!")
 
     # Check if the DataFrame is empty
+    if "stock_data" in st.session_state:
+    data = st.session_state["stock_data"]
+    
     if data is not None and not data.empty:
         # Plot candlestick chart
         fig = go.Figure(data=[
