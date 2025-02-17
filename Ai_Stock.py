@@ -48,10 +48,6 @@ if "stock_data" in st.session_state:
 
     st.plotly_chart(fig)
 
-else:
-    st.warning("No data found for the specified ticker and date range. Please check your inputs.")
-    st.info("Click 'Fetch Data' to load stock data.")
-
 
     # Sidebar: Select technical indicators
     st.sidebar.subheader("Technical Indicators")
@@ -73,7 +69,6 @@ else:
             sma = data['Close'].rolling(window=20).mean()
             std = data['Close'].rolling(window=20).std()
             bb_upper = sma + 2 * std
-            bb_lower = sma - 2 * std
             fig.add_trace(go.Scatter(x=data.index, y=bb_upper, mode='lines', name='BB Upper'))
             fig.add_trace(go.Scatter(x=data.index, y=bb_lower, mode='lines', name='BB Lower'))
         elif indicator == "VWAP":
@@ -118,3 +113,7 @@ else:
 
             # Clean up temporary file
             os.remove(tmpfile_path)
+
+else:
+    st.warning("No data found for the specified ticker and date range. Please check your inputs.")
+    st.info("Click 'Fetch Data' to load stock data.")
