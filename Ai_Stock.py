@@ -28,25 +28,25 @@ if st.sidebar.button("Fetch Data"):
 if "stock_data" in st.session_state:
     data = st.session_state["stock_data"]
 
-    # Plot candlestick chart
-        fig = go.Figure(data=[
-            go.Candlestick(
-                x=data.index,
-                open=data['Open'],
-                high=data['High'],
-                low=data['Low'],
-                close=data['Close'],
-                name="Candlestick"
-            )
-        ])
-
-        fig.update_layout(
-            title=f"Candlestick Chart for {ticker}",
-            xaxis_title="Date",
-            yaxis_title="Price",
+# Plot candlestick chart
+    fig = go.Figure(data=[
+        go.Candlestick(
+            x=data.index,
+            open=data['Open'],
+            high=data['High'],
+            low=data['Low'],
+            close=data['Close'],
+            name="Candlestick"
         )
+    ])
 
-        st.plotly_chart(fig)
+    fig.update_layout(
+        title=f"Candlestick Chart for {ticker}",
+        xaxis_title="Date",
+        yaxis_title="Price",
+    )
+
+    st.plotly_chart(fig)
     else:
         st.warning("No data found for the specified ticker and date range. Please check your inputs.")
 else:
