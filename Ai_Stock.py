@@ -28,7 +28,7 @@ if st.sidebar.button("Fetch Data"):
 if "stock_data" in st.session_state:
     data = st.session_state["stock_data"]
 
-# Plot candlestick chart
+    # Plot candlestick chart
     fig = go.Figure(data=[
         go.Candlestick(
             x=data.index,
@@ -47,9 +47,9 @@ if "stock_data" in st.session_state:
     )
 
     st.plotly_chart(fig)
-        else:
-            st.warning("No data found for the specified ticker and date range. Please check your inputs.")
+
 else:
+    st.warning("No data found for the specified ticker and date range. Please check your inputs.")
     st.info("Click 'Fetch Data' to load stock data.")
 
 
