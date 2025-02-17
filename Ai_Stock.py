@@ -21,75 +21,82 @@ end_date = st.sidebar.date_input("End Date", value=pd.to_datetime("2024-12-14"))
 
 # Fetch stock data
 if st.sidebar.button("Fetch Data"):
-    st.session_state["stock_data"] = yf.download(ticker, start=start_date, end=end_date)
-    st.success("Stock data loaded successfully!")
+    try:
+        st.session_state["stock_data"] = yf.download(ticker, start=start_date, end=end_date)
+        st.success("Stock data loaded successfully!")
+    except Exception as e:
+        st.error(f"Error fetching data: {e}")
 
 # Check if data is available
 if "stock_data" in st.session_state:
     data = st.session_state["stock_data"]
 
-    # Plot candlestick chart
-    fig = go.Figure(data=[
-        go.Candlestick(
-            x=data.index,
-            open=data['Open'],
-            high=data['High'],
-            low=data['Low'],
-            close=data['Close'],
-            name="Candlestick"
+    # Check if the DataFrame is empty
+    if data is not None and not data.empty:
+
+        # Plot candlestick chart
+        fig = go.Figure(data=[
+            go.Candlestick(
+                x=data.index,
+                open=data['Open'],
+                high=data['High'],
+                low=data['Low'],
+                close=data['Close'],
+                name="Candlestick"
+            )
+        ])
+
+        fig.update_layout(
+            title=f"Candlestick Chart for {ticker}",
+            xaxis_title="Date",
+            yaxis_title="Price",
         )
-    ])
 
-    fig.update_layout(
-        title=f"Candlestick Chart for {ticker}",
-        xaxis_title="Date",
-        yaxis_title="Price",
-    )
+        # Sidebar: Select technical indicators
+        st.sidebar.subheader("Technical Indicators")
+        indicators = st.sidebar.multiselect(
+            "Select Indicators:",
+            ["20-Day SMA", "20-Day EMA", "20-Day Bollinger Bands", "VWAP"],
+            default=["20-Day SMA"]
+        )
 
-    st.plotly_chart(fig)
+        # Helper function to add indicators to the chart
+        def add_indicator(indicator, data, fig):  # Pass data and fig as arguments
+            try:  # Add a try-except block to handle potential errors within the function
+                if indicator == "20-Day SMA":
+                    sma = data['Close'].rolling(window=20).mean()
+                    fig.add_trace(go.Scatter(x=data.index, y=sma, mode='lines', name='SMA (20)'))
+                elif indicator == "20-Day EMA":
+                    ema = data['Close'].ewm(span=20).mean()
+                    fig.add_trace(go.Scatter(x=data.index, y=ema, mode='lines', name='EMA (20)'))
+                elif indicator == "20-Day Bollinger Bands":
+                    sma = data['Close'].rolling(window=20).mean()
+                    std = data['Close'].rolling(window=20).std()
+                    bb_upper = sma + 2 * std
+                    bb_lower = sma - 2 * std
+                    fig.add_trace(go.Scatter(x=data.index, y=bb_upper, mode='lines', name='BB Upper'))
+                    fig.add_trace(go.Scatter(x=data.index, y=bb_lower, mode='lines', name='BB Lower'))
+                elif indicator == "VWAP":
+                    data['VWAP'] = (data['Close'] * data['Volume']).cumsum() / data['Volume'].cumsum()
+                    fig.add_trace(go.Scatter(x=data.index, y=data['VWAP'], mode='lines', name='VWAP'))
+            except Exception as e:
+                st.error(f"Error adding indicator {indicator}: {e}")  # Display error message
 
+        # Add selected indicators to the chart
+        for indicator in indicators:
+            add_indicator(indicator, data, fig)  # Pass data and fig to the function
 
-    # Sidebar: Select technical indicators
-    st.sidebar.subheader("Technical Indicators")
-    indicators = st.sidebar.multiselect(
-        "Select Indicators:",
-        ["20-Day SMA", "20-Day EMA", "20-Day Bollinger Bands", "VWAP"],
-        default=["20-Day SMA"]
-    )
+        fig.update_layout(xaxis_rangeslider_visible=False)
+        st.plotly_chart(fig)
 
-    # Helper function to add indicators to the chart
-    def add_indicator(indicator):
-        if indicator == "20-Day SMA":
-            sma = data['Close'].rolling(window=20).mean()
-            fig.add_trace(go.Scatter(x=data.index, y=sma, mode='lines', name='SMA (20)'))
-        elif indicator == "20-Day EMA":
-            ema = data['Close'].ewm(span=20).mean()
-            fig.add_trace(go.Scatter(x=data.index, y=ema, mode='lines', name='EMA (20)'))
-        elif indicator == "20-Day Bollinger Bands":
-            sma = data['Close'].rolling(window=20).mean()
-            std = data['Close'].rolling(window=20).std()
-            bb_upper = sma + 2 * std
-            fig.add_trace(go.Scatter(x=data.index, y=bb_upper, mode='lines', name='BB Upper'))
-            fig.add_trace(go.Scatter(x=data.index, y=bb_lower, mode='lines', name='BB Lower'))
-        elif indicator == "VWAP":
-            data['VWAP'] = (data['Close'] * data['Volume']).cumsum() / data['Volume'].cumsum()
-            fig.add_trace(go.Scatter(x=data.index, y=data['VWAP'], mode='lines', name='VWAP'))
-
-    # Add selected indicators to the chart
-    for indicator in indicators:
-        add_indicator(indicator)
-
-    fig.update_layout(xaxis_rangeslider_visible=False)
-    st.plotly_chart(fig)
-
-    # Analyze chart with LLaMA 3.2 Vision
-    st.subheader("AI-Powered Analysis")
-    if st.button("Run AI Analysis"):
-        with st.spinner("Analyzing the chart, please wait..."):
-            # Save chart as a temporary image
-            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
-                fig.write_image(tmpfile.name)
-                tmpfile_path = tmpfile.name
+        # Analyze chart with LLaMA 3.2 Vision
+        st.subheader("AI-Powered Analysis")
+        if st.button("Run AI Analysis"):
+            with st.spinner("Analyzing the chart, please wait..."):
+                # Save chart as a temporary image
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+                    fig.write_image(tmpfile.name)
+                    tmpfile_path = tmpfile.name
 
             # Read image and encode to Base64
             with open(tmpfile_path, "rb") as image_file:
@@ -114,6 +121,8 @@ if "stock_data" in st.session_state:
             # Clean up temporary file
             os.remove(tmpfile_path)
 
+    else:
+        st.warning("No data found for the specified ticker and date range. Please check your inputs.")
+        st.info("Click 'Fetch Data' to load stock data.")
 else:
-    st.warning("No data found for the specified ticker and date range. Please check your inputs.")
     st.info("Click 'Fetch Data' to load stock data.")
