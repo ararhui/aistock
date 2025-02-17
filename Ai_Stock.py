@@ -47,8 +47,8 @@ if "stock_data" in st.session_state:
     )
 
     st.plotly_chart(fig)
-    else:
-        st.warning("No data found for the specified ticker and date range. Please check your inputs.")
+        else:
+            st.warning("No data found for the specified ticker and date range. Please check your inputs.")
 else:
     st.info("Click 'Fetch Data' to load stock data.")
 
