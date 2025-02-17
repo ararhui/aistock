@@ -24,7 +24,9 @@ if st.sidebar.button("Fetch Data"):
     st.session_state["stock_data"] = yf.download(ticker, start=start_date, end=end_date)
     st.success("Stock data loaded successfully!")
 
-    # Check if the DataFrame is empty
+# Check if data is available
+if "stock_data" in st.session_state:
+    data = st.session_state["stock_data"]
     if not data.empty:
         # Plot candlestick chart
         fig = go.Figure(data=[
