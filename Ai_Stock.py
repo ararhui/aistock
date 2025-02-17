@@ -22,7 +22,8 @@ end_date = st.sidebar.date_input("End Date", value=pd.to_datetime("2024-12-14"))
 # Fetch stock data
 if st.sidebar.button("Fetch Data"):
     try:
-        data = yf.download(ticker, start=start_date, end=end_date)
+        yf_data = yf.download(ticker, start=start_date, end=end_date)
+        data = pd.DataFrame(yf_data)  # Create a new DataFrame
         st.session_state["stock_data"] = data  # Store the data in session state
         st.success("Stock data loaded successfully!")
     except Exception as e:
