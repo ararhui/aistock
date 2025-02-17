@@ -24,17 +24,32 @@ if st.sidebar.button("Fetch Data"):
     st.session_state["stock_data"] = yf.download(ticker, start=start_date, end=end_date)
     st.success("Stock data loaded successfully!")
 
-# Check if data is available
-if "stock_data" in st.session_state:
-    data = st.session_state["stock_data"]
+    # Check if the DataFrame is empty
+    if not data.empty:
+        # Plot candlestick chart
+        fig = go.Figure(data=[
+            go.Candlestick(
+                x=data.index,
+                open=data['Open'],
+                high=data['High'],
+                low=data['Low'],
+                close=data['Close'],
+                name="Candlestick"
+            )
+        ])
 
-    # Display the data as a table
-    st.header(f"Stock Data for {ticker}")
-    st.dataframe(data)  # Use st.dataframe or st.table
+        fig.update_layout(
+            title=f"Candlestick Chart for {ticker}",
+            xaxis_title="Date",
+            yaxis_title="Price",
+        )
 
-    # Optional: Display some summary statistics
-    st.subheader("Summary Statistics")
-    st.write(data.describe())
+        # Force a specific Plotly renderer (try this if plots still don't show)
+        # fig.show(renderer="browser")  # Uncomment this line if needed
+
+        st.plotly_chart(fig)
+    else:
+        st.warning("No data found for the specified ticker and date range. Please check your inputs.")
 else:
     st.info("Click 'Fetch Data' to load stock data.")
 
