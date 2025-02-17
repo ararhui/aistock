@@ -36,7 +36,7 @@ if "stock_data" in st.session_state:
     # Check if the DataFrame is empty or contains NaN values
     if data is not None and not data.empty and not data.isnull().values.any():
 
-        st.write(f"Type of data['Open']: {type(data.loc[:, 'Open'])}")  # Check type with data.loc
+        st.write(f"Type of data['Open']: {type(data['Open'])}")  # Check type with data.loc
         st.write(f"Type of data: {type(data)}")  # Check type of data
 
         st.write("First 5 rows of data:")  # Print the first few rows
@@ -47,11 +47,11 @@ if "stock_data" in st.session_state:
 
         # Convert data types to numeric (handle potential errors)
         try:
-            data.loc[:, 'Open'] = pd.to_numeric(data.loc[:, 'Open'])  # Use data.loc
-            data.loc[:, 'High'] = pd.to_numeric(data.loc[:, 'High'])  # Use data.loc
-            data.loc[:, 'Low'] = pd.to_numeric(data.loc[:, 'Low'])  # Use data.loc
-            data.loc[:, 'Close'] = pd.to_numeric(data.loc[:, 'Close'])  # Use data.loc
-            data.loc[:, 'Volume'] = pd.to_numeric(data.loc[:, 'Volume'])  # Use data.loc
+            data['Open'] = pd.to_numeric(data['Open'])  # Use data.loc
+            data['High'] = pd.to_numeric(data['High'])  # Use data.loc
+            data['Low'] = pd.to_numeric(data['Low'])  # Use data.loc
+            data['Close'] = pd.to_numeric(data['Close'])  # Use data.loc
+            data['Volume'] = pd.to_numeric(data['Volume'])  # Use data.loc
         except ValueError as e:
             st.error(f"Error converting data to numeric: {e}")
             st.stop()
