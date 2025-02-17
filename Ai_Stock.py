@@ -24,6 +24,11 @@ if st.sidebar.button("Fetch Data"):
     try:
         yf_data = yf.download(ticker, start=start_date, end=end_date)
         data = pd.DataFrame(yf_data)  # Create a new DataFrame
+
+        # Flatten the DataFrame
+        data.columns = data.columns.get_level_values(0)  # Remove MultiIndex
+        data = data.reset_index()  # Reset index to make 'Date' a column
+
         st.session_state["stock_data"] = data  # Store the data in session state
         st.success("Stock data loaded successfully!")
     except Exception as e:
@@ -60,7 +65,7 @@ if "stock_data" in st.session_state:
         # Plot candlestick chart
         fig = go.Figure(data=[
             go.Candlestick(
-                x=data.index,
+                x=data['Date'],  # Use 'Date' column for x-axis
                 open=data['Open'],
                 high=data['High'],
                 low=data['Low'],
@@ -90,20 +95,20 @@ if "stock_data" in st.session_state:
             try:  # Add a try-except block to handle potential errors within the function
                 if indicator == "20-Day SMA":
                     sma = data['Close'].rolling(window=20).mean()
-                    fig.add_trace(go.Scatter(x=data.index, y=sma, mode='lines', name='SMA (20)'))
+                    fig.add_trace(go.Scatter(x=data['Date'], y=sma, mode='lines', name='SMA (20)'))
                 elif indicator == "20-Day EMA":
                     ema = data['Close'].ewm(span=20).mean()
-                    fig.add_trace(go.Scatter(x=data.index, y=ema, mode='lines', name='EMA (20)'))
+                    fig.add_trace(go.Scatter(x=data['Date'], y=ema, mode='lines', name='EMA (20)'))
                 elif indicator == "20-Day Bollinger Bands":
                     sma = data['Close'].rolling(window=20).mean()
                     std = data['Close'].rolling(window=20).std()
                     bb_upper = sma + 2 * std
                     bb_lower = sma - 2 * std
-                    fig.add_trace(go.Scatter(x=data.index, y=bb_upper, mode='lines', name='BB Upper'))
-                    fig.add_trace(go.Scatter(x=data.index, y=bb_lower, mode='lines', name='BB Lower'))
+                    fig.add_trace(go.Scatter(x=data['Date'], y=bb_upper, mode='lines', name='BB Upper'))
+                    fig.add_trace(go.Scatter(x=data['Date'], y=bb_lower, mode='lines', name='BB Lower'))
                 elif indicator == "VWAP":
                     data['VWAP'] = (data['Close'] * data['Volume']).cumsum() / data['Volume'].cumsum()
-                    fig.add_trace(go.Scatter(x=data.index, y=data['VWAP'], mode='lines', name='VWAP'))
+                    fig.add_trace(go.Scatter(x=data['Date'], y=data['VWAP'], mode='lines', name='VWAP'))
             except Exception as e:
                 st.error(f"Error adding indicator {indicator}: {e}")  # Display error message
 
