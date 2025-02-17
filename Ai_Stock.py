@@ -36,8 +36,14 @@ if "stock_data" in st.session_state:
     # Check if the DataFrame is empty or contains NaN values
     if data is not None and not data.empty and not data.isnull().values.any():
 
-        st.write(f"Type of data['Open']: {type(data['Open'])}")  # Add this line
-        st.write(f"Type of data: {type(data)}")  # Add this line
+        st.write(f"Type of data['Open']: {type(data.loc[:, 'Open'])}")  # Check type with data.loc
+        st.write(f"Type of data: {type(data)}")  # Check type of data
+
+        st.write("First 5 rows of data:")  # Print the first few rows
+        st.write(data.head())
+
+        st.write("Data types of each column:")  # Print the data types of each column
+        st.write(data.dtypes)
 
         # Convert data types to numeric (handle potential errors)
         try:
